@@ -103,9 +103,9 @@ bool Mailbox::sendItem(Item* item) const
 
 	Player* player = g_game.getPlayerByName(receiver);
 	if (player) {
-		if (DepotLocker* depotLocker = player->getDepotLocker(depotId)) {
-			if (g_game.internalMoveItem(item->getParent(), depotLocker, INDEX_WHEREEVER,
-				item, item->getItemCount(), nullptr, FLAG_NOLIMIT) == RETURNVALUE_NOERROR) {
+		DepotLocker* depotLocker = player->getDepotLocker(depotId);
+		if (depotLocker) {
+			if (g_game.internalMoveItem(item->getParent(), depotLocker, INDEX_WHEREEVER, item, item->getItemCount(), nullptr, FLAG_NOLIMIT, player) == RETURNVALUE_NOERROR) {
 				g_game.transformItem(item, item->getID() + 1);
 				player->onReceiveMail();
 				return true;
@@ -118,7 +118,7 @@ bool Mailbox::sendItem(Item* item) const
 		}
 
 		if (DepotLocker* depotLocker = tmpPlayer.getDepotLocker(depotId)) {
-			if (g_game.internalMoveItem(item->getParent(), depotLocker, INDEX_WHEREEVER, item, item->getItemCount(), nullptr, FLAG_NOLIMIT) == RETURNVALUE_NOERROR) {
+			if (g_game.internalMoveItem(item->getParent(), depotLocker, INDEX_WHEREEVER, item, item->getItemCount(), nullptr, FLAG_NOLIMIT, &tmpPlayer) == RETURNVALUE_NOERROR) {
 				g_game.transformItem(item, item->getID() + 1);
 				IOLoginData::savePlayer(&tmpPlayer);
 				return true;

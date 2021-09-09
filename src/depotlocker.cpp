@@ -20,6 +20,7 @@
 #include "otpch.h"
 
 #include "depotlocker.h"
+#include "player.h"
 
 DepotLocker::DepotLocker(uint16_t type) :
 	Container(type, 30), depotId(0) {}
@@ -37,7 +38,22 @@ Attr_ReadValue DepotLocker::readAttr(AttrTypes_t attr, PropStream& propStream)
 
 ReturnValue DepotLocker::queryAdd(int32_t index, const Thing& thing, uint32_t count, uint32_t flags, Creature* actor) const
 {
+	Player* actorPlayer = actor ? actor->getPlayer() : nullptr;
+	if (actorPlayer) {
+		actorPlayer->setLastDepotId(depotId);
+	}
+
 	return Container::queryAdd(index, thing, count, flags, actor);
+}
+
+ReturnValue DepotLocker::queryRemove(const Thing& thing, uint32_t count, uint32_t flags, Creature* actor /*= nullptr */) const
+{
+	Player* actorPlayer = actor ? actor->getPlayer() : nullptr;
+	if (actorPlayer) {
+		actorPlayer->setLastDepotId(depotId);
+	}
+
+	return Container::queryRemove(thing, count, flags, actor);
 }
 
 void DepotLocker::postAddNotification(Thing* thing, const Cylinder* oldParent, int32_t index, cylinderlink_t)
