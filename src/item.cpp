@@ -526,6 +526,16 @@ Attr_ReadValue Item::readAttr(AttrTypes_t attr, PropStream& propStream)
 			break;
 		}
 
+		case ATTR_ATTACK_SPEED: {
+			uint32_t attackSpeed;
+			if (!propStream.read<uint32_t>(attackSpeed)) {
+				return ATTR_READ_ERROR;
+			}
+
+			setIntAttr(ITEM_ATTRIBUTE_ATTACK_SPEED, attackSpeed);
+			break;
+		}
+
 		case ATTR_DEFENSE: {
 			int32_t defense;
 			if (!propStream.read<int32_t>(defense)) {
@@ -586,7 +596,7 @@ Attr_ReadValue Item::readAttr(AttrTypes_t attr, PropStream& propStream)
 			break;
 		}
 
-		case ATTR_WRAPID: {
+		/*case ATTR_WRAPID: {
 			uint16_t wrapId;
 			if (!propStream.read<uint16_t>(wrapId)) {
 				return ATTR_READ_ERROR;
@@ -604,7 +614,7 @@ Attr_ReadValue Item::readAttr(AttrTypes_t attr, PropStream& propStream)
 
 			setIntAttr(ITEM_ATTRIBUTE_STOREITEM, storeItem);
 			break;
-		}
+		}*/
 
 		//these should be handled through derived classes
 		//If these are called then something has changed in the items.xml since the map was saved
@@ -786,6 +796,11 @@ void Item::serializeAttr(PropWriteStream& propWriteStream) const
 		propWriteStream.write<int32_t>(getIntAttr(ITEM_ATTRIBUTE_ATTACK));
 	}
 
+	if (hasAttribute(ITEM_ATTRIBUTE_ATTACK_SPEED)) {
+		propWriteStream.write<uint8_t>(ATTR_ATTACK_SPEED);
+		propWriteStream.write<uint32_t>(getIntAttr(ITEM_ATTRIBUTE_ATTACK_SPEED));
+	}
+
 	if (hasAttribute(ITEM_ATTRIBUTE_DEFENSE)) {
 		propWriteStream.write<uint8_t>(ATTR_DEFENSE);
 		propWriteStream.write<int32_t>(getIntAttr(ITEM_ATTRIBUTE_DEFENSE));
@@ -816,7 +831,7 @@ void Item::serializeAttr(PropWriteStream& propWriteStream) const
 		propWriteStream.write<int32_t>(getIntAttr(ITEM_ATTRIBUTE_DECAYTO));
 	}
 
-	if (hasAttribute(ITEM_ATTRIBUTE_WRAPID)) {
+	/*if (hasAttribute(ITEM_ATTRIBUTE_WRAPID)) {
 		propWriteStream.write<uint8_t>(ATTR_WRAPID);
 		propWriteStream.write<uint16_t>(getIntAttr(ITEM_ATTRIBUTE_WRAPID));
 	}
@@ -824,7 +839,7 @@ void Item::serializeAttr(PropWriteStream& propWriteStream) const
 	if (hasAttribute(ITEM_ATTRIBUTE_STOREITEM)) {
 		propWriteStream.write<uint8_t>(ATTR_STOREITEM);
 		propWriteStream.write<uint8_t>(getIntAttr(ITEM_ATTRIBUTE_STOREITEM));
-	}
+	}*/
 
 	if (hasAttribute(ITEM_ATTRIBUTE_CUSTOM)) {
 		const ItemAttributes::CustomAttributeMap* customAttrMap = attributes->getCustomAttributeMap();
@@ -916,7 +931,6 @@ std::string Item::getDescription(const ItemType& it, int32_t lookDistance,
 
 			begin = false;
 		} else if (it.weaponType != WEAPON_AMMO) {
-
 			int32_t attack, defense, extraDefense;
 			if (item) {
 				attack = item->getAttack();
@@ -935,6 +949,18 @@ std::string Item::getDescription(const ItemType& it, int32_t lookDistance,
 				if (it.abilities && it.abilities->elementType != COMBAT_NONE && it.abilities->elementDamage != 0) {
 					s << " physical + " << it.abilities->elementDamage << ' ' << getCombatName(it.abilities->elementType);
 				}
+			}
+
+			uint32_t attackSpeed = item ? item->getAttackSpeed() : it.attackSpeed;
+			if (attackSpeed) {
+				if (begin) {
+					begin = false;
+					s << " (";
+				} else {
+					s << ", ";
+				}
+
+				s << "Atk Spd:" << (attackSpeed / 1000.) << "s";
 			}
 
 			if (defense != 0 || extraDefense != 0) {
@@ -1663,16 +1689,16 @@ void ItemAttributes::setIntAttr(itemAttrTypes type, int64_t value)
 		return;
 	}
 
+	if (type == ITEM_ATTRIBUTE_ATTACK_SPEED && value < 100) {
+		value = 100;
+	}
+
 	getAttr(type).value.integer = value;
 }
 
 void ItemAttributes::increaseIntAttr(itemAttrTypes type, int64_t value)
 {
-	if (!isIntAttrType(type)) {
-		return;
-	}
-
-	getAttr(type).value.integer += value;
+	setIntAttr(type, getIntAttr(type) + value);
 }
 
 const ItemAttributes::Attribute* ItemAttributes::getExistingAttr(itemAttrTypes type) const
@@ -1707,7 +1733,7 @@ void Item::startDecaying()
 	g_game.startDecay(this);
 }
 
-bool Item::hasMarketAttributes() const
+/*bool Item::hasMarketAttributes() const
 {
 	if (attributes == nullptr) {
 		return true;
@@ -1729,7 +1755,7 @@ bool Item::hasMarketAttributes() const
 		}
 	}
 	return true;
-}
+}*/
 
 template<>
 const std::string& ItemAttributes::CustomAttribute::get<std::string>() {

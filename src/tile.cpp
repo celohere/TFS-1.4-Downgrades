@@ -232,11 +232,6 @@ Creature* Tile::getTopVisibleCreature(const Creature* creature) const
 {
 	if (const CreatureVector* creatures = getCreatures()) {
 		if (creature) {
-			const Player* player = creature->getPlayer();
-			if (player && player->isAccessPlayer()) {
-				return getTopCreature();
-			}
-
 			for (Creature* tileCreature : *creatures) {
 				if (creature->canSeeCreature(tileCreature)) {
 					return tileCreature;
@@ -260,11 +255,6 @@ const Creature* Tile::getBottomVisibleCreature(const Creature* creature) const
 {
 	if (const CreatureVector* creatures = getCreatures()) {
 		if (creature) {
-			const Player* player = creature->getPlayer();
-			if (player && player->isAccessPlayer()) {
-				return getBottomCreature();
-			}
-
 			for (auto it = creatures->rbegin(), end = creatures->rend(); it != end; ++it) {
 				if (creature->canSeeCreature(*it)) {
 					return *it;
@@ -638,9 +628,9 @@ ReturnValue Tile::queryAdd(int32_t, const Thing& thing, uint32_t, uint32_t flags
 			return RETURNVALUE_NOERROR;
 		}
 
-		if (item->isStoreItem()) {
+		/*if (item->isStoreItem()) {
 			return RETURNVALUE_ITEMCANNOTBEMOVEDTHERE;
-		}
+		}*/
 
 		bool itemIsHangable = item->isHangable();
 		if (ground == nullptr && !itemIsHangable) {

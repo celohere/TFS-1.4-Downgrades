@@ -366,7 +366,6 @@ ReturnValue Actions::internalUseItem(Player* player, const Position& pos, uint8_
 			DepotLocker* myDepotLocker = player->getDepotLocker(depot->getDepotId());
 			myDepotLocker->setParent(depot->getParent()->getTile());
 			openContainer = myDepotLocker;
-			player->setLastDepotId(depot->getDepotId());
 		} else {
 			openContainer = container;
 		}
@@ -505,7 +504,7 @@ bool enterMarket(Player* player, Item*, const Position&, Thing*, const Position&
 		return false;
 	}
 
-	player->sendMarketEnter(player->getLastDepotId());
+	//player->sendMarketEnter(player->getLastDepotId());
 	return true;
 }
 
